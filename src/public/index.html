@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Simpe chat</title>
+    <style>
+      body {
+        background: #eee9e9;
+      }
+      .title {
+        text-align: center;
+      }
+
+      .container {
+        display: none;
+        flex-direction: column;
+        gap: 5px;
+        width: 200px;
+        margin: auto;
+      }
+      .register {
+        width: 200px;
+        margin: auto;
+        padding: 10px;
+      }
+      input {
+        margin-bottom: 10px;
+      }
+      li {
+        list-style-type: none;
+      }
+      #input {
+        margin-bottom: 5px;
+      }
+      .name {
+        opacity: 0.7;
+        font-size: 18px;
+        text-align: left;
+        font-style: italic;
+      }
+      .text {
+        font-size: 20px;
+        border: 2px solid black;
+        border-radius: 5px;
+        padding: 3px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1 class="title">Добро пожаловать в чат!</h1>
+
+    <div class="register">
+      <input type="text" placeholder="Введите ваше имя" />
+      <button class="btn">Подтвердить</button>
+    </div>
+
+    <div class="container">
+      <h2>Чат</h2>
+      <div id="messages"></div>
+      <form id="form">
+        <input id="input" autocomplete="off" autofocus />
+        <button>Отправить</button>
+      </form>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      const input_name = document.querySelector(".register input");
+      let name = "";
+      document.querySelector(".register .btn").addEventListener("click", () => {
+        if (input_name.value == "") {
+          alert("необходим username");
+          return;
+        }
+        name = input_name.value;
+        document.querySelector(".register").style.display = "none";
+        document.querySelector(".container").style.display = "flex";
+      });
+
+      const socket = io();
+      const messages = document.getElementById("messages");
+      const form = document.getElementById("form");
+      const input = document.getElementById("input");
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        if (input.value) {
+          socket.emit("chat message", { user_id: name, text: input.value });
+          input.value = "";
+        }
+      });
+
+      socket.on("chat message", (msg) => {
+        const item = document.createElement("li");
+        item.classList.add("text");
+        const id = document.createElement("span");
+        id.classList.add("name");
+        item.textContent = msg.text;
+        id.textContent = msg.user_id;
+        messages.appendChild(id);
+        messages.appendChild(item);
+        window.scrollTo(0, document.body.scrollHeight);
+      });
+    </script>
+  </body>
+</html>
